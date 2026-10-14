@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dynamical"
+version = "0.1.0"
+description = "A personal calendar that fills itself from your email and answers questions about your week."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "sqlalchemy>=2.0",
+  "pydantic>=2.7",
+  "pydantic-settings>=2.3",
+  "google-genai>=2.30",
+  "google-api-python-client>=2.140",
+  "google-auth-oauthlib>=1.2",
+  "google-auth-httplib2>=0.2",
+  "python-dateutil>=2.9",
+  "beautifulsoup4>=4.12",
+  "icalendar>=6.0",
+  "tzdata",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.2", "httpx>=0.27"]
+
+[project.scripts]
+dynamical = "dynamical.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+include = ["dynamical*"]
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+pythonpath = ["backend"]
