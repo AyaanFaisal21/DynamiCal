@@ -1,0 +1,23 @@
+Message-ID: <nl-20261013@campusbuzz-news.example.com>
+Date: Mon, 13 Oct 2026 09:00:00 -0400
+From: Campus Buzz <hello@campusbuzz-news.example.com>
+To: sam@scarlet.example.edu
+Subject: 12 events you can't miss this week
+List-Unsubscribe: <https://campusbuzz-news.example.com/u/xyz>
+Precedence: bulk
+MIME-Version: 1.0
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+<html><head><style>.x{color:red}</style></head><body>
+<p><a href="https://campusbuzz-news.example.com/view">View in browser</a></p>
+<h1>This week at campus</h1>
+<ul>
+<li>Tue Oct 14, 7 PM: Salsa night at the student center. <a href="https://campusbuzz-news.example.com/e/1">Register now</a></li>
+<li>Wed Oct 15, 12 PM: Free pizza with the Finance Club. <a href="https://campusbuzz-news.example.com/e/2">Join us</a></li>
+<li>Thu Oct 16, 6 PM: Career fair prep workshop. Limited seats!</li>
+<li>Fri Oct 17, 8 PM: Movie on the lawn.</li>
+</ul>
+<p>Don't miss our 20% off merch sale.</p>
+<p><a href="https://campusbuzz-news.example.com/u/xyz">Unsubscribe</a></p>
+</body></html>

@@ -1,0 +1,48 @@
+Message-ID: <invite-cs419-sync@google.com>
+Date: Mon, 13 Oct 2026 16:45:00 +0000
+From: Jordan Lee (Google Calendar) <calendar-notification@google.com>
+Reply-To: jordan.lee@cs.example.edu
+To: sam@scarlet.example.edu
+Subject: Invitation: CS 419 Project Sync @ Wed Oct 15, 2026 4pm - 5pm (EDT) (sam@scarlet.example.edu)
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="000000000000abc"
+
+--000000000000abc
+Content-Type: text/plain; charset="UTF-8"
+
+You have been invited to the following event.
+
+CS 419 Project Sync
+When: Wed Oct 15, 2026 4pm - 5pm Eastern Time - New York
+Where: CoRE 305
+Calendar: sam@scarlet.example.edu
+Who: jordan.lee@cs.example.edu - organizer, sam@scarlet.example.edu
+
+Let's go over the milestone 2 plan.
+
+--000000000000abc
+Content-Type: text/calendar; charset="UTF-8"; method=REQUEST
+
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VEVENT
+DTSTART:20261015T200000Z
+DTEND:20261015T210000Z
+DTSTAMP:20261013T164500Z
+ORGANIZER;CN=Jordan Lee:mailto:jordan.lee@cs.example.edu
+UID:cs419sync20261015@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN=sam@scarlet.example.edu:mailto:sam@scarlet.example.edu
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Jordan Lee:mailto:jordan.lee@cs.example.edu
+DESCRIPTION:Let's go over the milestone 2 plan.
+LOCATION:CoRE 305
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:CS 419 Project Sync
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR
+
+--000000000000abc--

@@ -1,0 +1,21 @@
+Message-ID: <appt-5551212@health.example.edu>
+Date: Mon, 13 Oct 2026 10:12:00 -0400
+From: Student Health <noreply@health.example.edu>
+To: sam@scarlet.example.edu
+Subject: Appointment confirmation
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Dear Sam,
+
+Your appointment is confirmed.
+
+Date: Friday, October 17, 2026
+Time: 10:30 AM
+Provider: Dr. Alvarez
+Location: Hurtado Health Center, 11 Bishop Place
+
+Please arrive 10 minutes early. Reply STOP to cancel text reminders.
+
+Student Health Services
