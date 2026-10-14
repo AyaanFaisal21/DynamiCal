@@ -46,10 +46,23 @@ On a 16 GB Mac, a 7B or 8B instruct model in 4-bit quantization is the practical
    2. Create an OAuth client of type Desktop app. Download the JSON.
    3. Save it as `secrets/credentials.json`.
    4. Run `.venv/bin/dynamical auth`. A browser window asks you to sign in. The token is saved to `secrets/token.json`.
-5. First sync: `.venv/bin/dynamical sync`.
-6. Run the server: `.venv/bin/dynamical serve`, then open http://127.0.0.1:8000.
+5. Build the web app once: `cd frontend && pnpm install && pnpm build`.
+6. First sync: `.venv/bin/dynamical sync`.
+7. Run the server: `.venv/bin/dynamical serve`, then open http://127.0.0.1:8000.
 
 Nothing in `secrets/` or `data/` is committed.
+
+### Try it without Gmail or a model
+
+```bash
+.venv/bin/dynamical demo
+DYNAMICAL_DB=./data/demo.db .venv/bin/dynamical serve
+```
+
+The demo loads nine synthetic emails with canned model output: a ticket
+confirmation, a calendar invite, a friend's dinner plan, a course exam notice,
+a Canvas deadline, a health appointment, a department announcement that
+lands in the review queue, and two bulk emails that the rules drop.
 
 ## Commands
 
@@ -60,12 +73,67 @@ Nothing in `secrets/` or `data/` is committed.
 | `dynamical ingest FILE...` | Run the pipeline on `.eml` files. Good for testing without Gmail |
 | `dynamical serve` | Start the API and the web app |
 | `dynamical status` | Show counts and the last sync time |
+| `dynamical demo` | Load the sample emails into `data/demo.db` |
+
+## How an email becomes an event
+
+1. **Triage** (`ingest/triage.py`). Rules score each email. Gmail's own
+   category is the strongest signal. List headers, no-reply senders, and
+   marketing words count against. Trusted domains, direct addressing, and
+   commitment words such as "your ticket" or "due" count for. A score of -4 or
+   lower is dropped without a model call. A calendar attachment skips the
+   model entirely.
+2. **Extraction** (`ingest/extract.py`). The model returns one JSON object: a
+   relationship label (registered, personal, invited, course, informational,
+   promotional, none), the events with ISO times, and any tasks.
+3. **Policy** (`ingest/policy.py`). Registered, personal, invited, and course
+   items are added when confidence is at or above `AUTO_ADD_THRESHOLD`, and
+   proposed between `PROPOSE_THRESHOLD` and that. Informational items are
+   always proposed, never added. Promotional items are dropped. "You're
+   invited" sent to a list is informational, not invited.
+4. **Upsert** (`ingest/upsert.py`). A calendar UID, a title-plus-date
+   fingerprint, or the email thread identifies an existing event. Updates
+   change times in place. Cancellations mark the event cancelled. A rejected
+   event never comes back.
+
+The Inbox tab in the web app shows this trail for every email: the triage
+score and reasons, the relationship, and the events that came out.
+
+## Chat
+
+The side panel sends your question to the model with a set of tools: events
+in a range, upcoming exams and deadlines, free time on a day, open tasks,
+pending proposals, the source email of an event, and study-block suggestions.
+The model calls tools, the code answers them, and the model writes the reply.
+Tool rounds are capped at six. Creating a block or task from chat only
+happens when you ask for it.
+
+With `LLM_PROVIDER=none` the chat can still list a day's events.
+
+## Development
+
+```bash
+.venv/bin/pytest                    # backend tests, no network
+cd frontend && pnpm dev             # web app on :5173, proxies /api to :8000
+.venv/bin/dynamical serve --reload  # API with auto reload
+```
+
+`ENGINEERING_LOG.md` records the problems met while building this, including
+the small ones.
+
+## Not done yet
+
+- Two-way Google Calendar sync. Events already carry an `external_id` field for it.
+- Desktop or push notifications. The `/api/alerts` endpoint has the data.
+- Recurring events from calendar files. Only the first instance is read.
+- Preferred study hours. Suggested blocks start at the day start hour.
 
 ## Layout
 
 ```
 backend/dynamical/
   config.py        settings from .env
+  demo.py          sample emails and canned model output
   db.py models.py  SQLite through SQLAlchemy
   gmail/           OAuth, API client, RFC 822 parsing
   ingest/          triage -> ics or extract -> policy -> upsert
@@ -75,7 +143,7 @@ backend/dynamical/
   todo/            daily and weekly digests
   api/             FastAPI routes
 backend/tests/     pytest, with synthetic .eml fixtures
-frontend/          React app: month and week views, review queue, chat panel
+frontend/          React app: month and week views, event drawer, side panel
 ```
 
 ## Tests
