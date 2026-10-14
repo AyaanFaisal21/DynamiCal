@@ -35,6 +35,8 @@ def main(argv: list[str] | None = None) -> int:
 
     sub.add_parser("status", help="show counts and the last sync")
     sub.add_parser("init-db", help="create the database")
+    p_demo = sub.add_parser("demo", help="load sample emails with canned model output into a demo database")
+    p_demo.add_argument("--db", type=Path, default=None, help="database path, default data/demo.db")
 
     args = parser.parse_args(argv)
     settings = get_settings()
@@ -49,6 +51,18 @@ def main(argv: list[str] | None = None) -> int:
             port=args.port or settings.port,
             reload=args.reload,
         )
+        return 0
+
+    if args.command == "demo":
+        from .demo import seed
+
+        demo_path = (args.db or settings.db_path.parent / "demo.db").resolve()
+        demo_db = Database.from_path(demo_path)
+        demo_db.create_all()
+        report = seed(demo_db, settings)
+        print(report.summary())
+        print(f"demo database at {demo_path}")
+        print(f"serve it with: DYNAMICAL_DB={demo_path} dynamical serve")
         return 0
 
     db = Database.from_path(settings.db_path)

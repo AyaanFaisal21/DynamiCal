@@ -1,5 +1,6 @@
 from sqlalchemy import select
 
+from dynamical.demo import CANNED
 from dynamical.ingest.extract import ExtractedEvent, ExtractedTask, Extraction
 from dynamical.ingest.pipeline import Pipeline
 from dynamical.models import Event, Message, Task
@@ -14,60 +15,21 @@ ALL = [
     "06_org_mass_invite",
     "07_canvas_assignment",
     "08_health_appointment",
+    "09_dept_colloquium",
 ]
-
-CANNED = {
-    "Your ticket for Rutgers AI Society": Extraction(
-        relationship="registered",
-        summary="Ticket confirmation for the hackathon kickoff.",
-        rationale="The user holds a ticket.",
-        events=[ExtractedEvent(title="Rutgers AI Society: Fall Hackathon Kickoff", start="2026-10-23T18:00:00-04:00", end="2026-10-23T21:00:00-04:00", location="Busch Student Center", kind="event", confidence=0.95)],
-    ),
-    "dinner saturday?": Extraction(
-        relationship="personal",
-        summary="A friend proposes dinner on Saturday.",
-        rationale="Written by a friend to the user.",
-        events=[ExtractedEvent(title="Dinner with Priya", start="2026-10-18T19:00:00-04:00", location="Stuff Yer Face", kind="social", confidence=0.8)],
-        tasks=[ExtractedTask(title="Reply to Priya about dinner", due="2026-10-15", kind="todo")],
-    ),
-    "Midterm 2 date and logistics": Extraction(
-        relationship="course",
-        summary="Midterm 2 date and a review session.",
-        rationale="Official course email.",
-        events=[
-            ExtractedEvent(title="CS 211 Midterm 2", start="2026-10-28T20:40:00-04:00", end="2026-10-28T22:00:00-04:00", location="Hill 114", kind="exam", confidence=0.95),
-            ExtractedEvent(title="CS 211 Midterm 2 review session", start="2026-10-26T19:00:00-04:00", location="CoRE 101", kind="class", confidence=0.85),
-        ],
-        tasks=[ExtractedTask(title="Read chapter 6 before the review session", due="2026-10-26", kind="reading")],
-    ),
-    "Homework 4: Dynamic Programming": Extraction(
-        relationship="course",
-        summary="A new assignment with a due date.",
-        rationale="Canvas notification for an enrolled course.",
-        events=[ExtractedEvent(title="CS 344 Homework 4 due", start="2026-10-20T23:59:00-04:00", kind="deadline", confidence=0.9)],
-        tasks=[ExtractedTask(title="CS 344 Homework 4: Dynamic Programming", due="2026-10-20T23:59:00-04:00", kind="assignment")],
-    ),
-    "Appointment confirmation": Extraction(
-        relationship="registered",
-        summary="A confirmed health appointment.",
-        rationale="Confirmation of a booking the user made.",
-        events=[ExtractedEvent(title="Student Health appointment with Dr. Alvarez", start="2026-10-17T10:30:00-04:00", location="Hurtado Health Center", kind="appointment", confidence=0.95)],
-    ),
-}
-
 
 def test_full_run_is_selective_and_idempotent(db, settings, load):
     backend = FakeBackend(CANNED)
     pipeline = Pipeline(db, settings, backend)
     report = pipeline.ingest([load(n) for n in ALL])
 
-    assert report.new == 8
+    assert report.new == 9
     assert report.skipped == 2  # promo newsletter and the org blast never reach the model
     assert report.from_ics == 1
-    assert report.extracted == 5
-    assert len(backend.calls) == 5
-    assert report.events_created == 7
-    assert report.proposed == 0
+    assert report.extracted == 6
+    assert len(backend.calls) == 6
+    assert report.events_created == 8
+    assert report.proposed == 1  # the department colloquium waits for review
     assert report.tasks_created == 3
 
     with db.session() as s:
@@ -80,8 +42,9 @@ def test_full_run_is_selective_and_idempotent(db, settings, load):
             "Rutgers AI Society: Fall Hackathon Kickoff",
             "CS 211 Midterm 2 review session",
             "CS 211 Midterm 2",
+            "Colloquium: Verified GPU kernels in practice",
         ]
-        assert all(e.status == "confirmed" for e in events)
+        assert [e.status for e in events] == ["confirmed"] * 7 + ["proposed"]
         invite = events[0]
         assert invite.source == "ics" and invite.external_id == "cs419sync20261015@google.com"
         deadline = next(e for e in events if e.kind == "deadline")
@@ -94,7 +57,7 @@ def test_full_run_is_selective_and_idempotent(db, settings, load):
     # Running the same mail again touches nothing and asks the model nothing.
     again = pipeline.ingest([load(n) for n in ALL])
     assert again.new == 0 and again.events_created == 0 and again.tasks_created == 0
-    assert len(backend.calls) == 5
+    assert len(backend.calls) == 6
 
 
 def test_informational_becomes_a_proposal(db, settings, load):

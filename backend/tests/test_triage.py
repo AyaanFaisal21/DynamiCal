@@ -11,6 +11,7 @@ EXPECTED = {
     "06_org_mass_invite": "skip",
     "07_canvas_assignment": "extract",
     "08_health_appointment": "extract",
+    "09_dept_colloquium": "extract",
 }
 
 

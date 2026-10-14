@@ -6,7 +6,8 @@ from fastapi.testclient import TestClient
 from dynamical.api.app import create_app
 from dynamical.ingest.pipeline import Pipeline
 from fake_backend import FakeBackend
-from test_pipeline import ALL, CANNED
+from dynamical.demo import CANNED
+from test_pipeline import ALL
 
 
 @pytest.fixture
@@ -29,8 +30,9 @@ def test_events_range_and_conflicts(client):
     r = client.get("/api/events", params={"from": "2026-10-12T00:00:00-04:00", "to": "2026-11-01T00:00:00-04:00"})
     assert r.status_code == 200
     events = r.json()
-    assert len(events) == 7
+    assert len(events) == 8  # seven confirmed plus one proposed
     assert events[0]["title"] == "CS 419 Project Sync"
+    assert events[-1]["status"] == "proposed"
     assert events[0]["relationship"] == "invited"
     assert events[0]["source_subject"].startswith("Invitation:")
 
@@ -116,14 +118,20 @@ def test_chat_round_trip(client):
 
 def test_messages_and_alerts(client):
     messages = client.get("/api/messages").json()
-    assert len(messages) == 8
+    assert len(messages) == 9
     promo = next(m for m in messages if "12 events" in m["subject"])
     assert promo["status"] == "skipped" and promo["triage_decision"] == "skip"
     exam_mail = next(m for m in messages if "Midterm 2" in m["subject"])
     assert exam_mail["extraction"]["relationship"] == "course"
     assert len(exam_mail["event_ids"]) == 2
     alerts = client.get("/api/alerts").json()
-    assert isinstance(alerts, list)
+    assert any(a["kind"] == "review" and a["count"] == 1 for a in alerts)
+
+    proposals = client.get("/api/proposals").json()
+    assert [p["title"] for p in proposals] == ["Colloquium: Verified GPU kernels in practice"]
+    accepted = client.post(f"/api/proposals/{proposals[0]['id']}/accept").json()
+    assert accepted["status"] == "confirmed"
+    assert client.get("/api/proposals").json() == []
 
 
 def test_sync_without_token_is_a_clean_400(client):

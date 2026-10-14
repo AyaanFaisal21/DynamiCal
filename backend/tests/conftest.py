@@ -10,17 +10,7 @@ from dynamical.gmail.parse import ParsedEmail, parse_eml_file
 
 FIXTURES = Path(__file__).parent / "fixtures" / "emails"
 
-# Labels Gmail would attach to each fixture. The parser cannot know these.
-LABELS = {
-    "01_eventbrite_confirmation": ["INBOX", "CATEGORY_UPDATES"],
-    "02_newsletter_promo": ["INBOX", "CATEGORY_PROMOTIONS"],
-    "03_friend_dinner": ["INBOX", "CATEGORY_PERSONAL"],
-    "04_gcal_invite": ["INBOX"],
-    "05_course_exam": ["INBOX", "CATEGORY_FORUMS"],
-    "06_org_mass_invite": ["INBOX", "CATEGORY_UPDATES"],
-    "07_canvas_assignment": ["INBOX", "CATEGORY_UPDATES"],
-    "08_health_appointment": ["INBOX", "CATEGORY_UPDATES"],
-}
+from dynamical.demo import LABELS  # noqa: E402
 
 
 @pytest.fixture
